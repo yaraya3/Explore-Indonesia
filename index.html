@@ -157,7 +157,33 @@
       .detail-gallery { grid-template-columns:1fr; }
       .detail-gallery img { height:220px; }
       .contact-form, .contact-info { padding:22px; }
-    }
+      
+      body.dark .contact-info,
+      body.dark footer {
+        background: #101a14;
+        color: #f7f5ed;
+      }
+      
+      body.dark .contact-info p,
+      body.dark footer p {
+        color: #cbd5ce;
+      }
+      
+      body.dark .contact-info a {
+        color: #ffffff;
+      }
+      
+      body.dark .contact-info a:hover {
+        color: #f4d778;
+      }
+      
+      body.dark footer .brand {
+        color: #f7f5ed !important;
+      }
+      
+      body.dark footer .brand span {
+        color: #f4d778;
+      }
   </style>
 </head>
 <body>
