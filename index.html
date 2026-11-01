@@ -108,6 +108,45 @@
     .stat span { color:var(--muted); font-size:.8rem; }
     .detail-section { display:none; }
     .detail-section.show { display:block; }
+
+    /* ANIMASI PERPINDAHAN HALAMAN */
+    @keyframes pageEnter {
+      from { opacity: 0; transform: translateY(22px) scale(.985); filter: blur(3px); }
+      to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    }
+    @keyframes contentRise {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .page-enter {
+      animation: pageEnter .58s cubic-bezier(.2,.75,.25,1) both;
+      will-change: opacity, transform;
+    }
+    .page-enter .detail-hero > div {
+      animation: contentRise .65s .08s ease both;
+    }
+    .page-enter .detail-hero > img {
+      animation: contentRise .7s .16s ease both;
+    }
+    .page-enter .detail-gallery img {
+      animation: contentRise .65s .25s ease both;
+    }
+    #homePage.page-enter .hero-content {
+      animation: contentRise .7s .08s ease both;
+    }
+    #homePage.page-enter .card {
+      animation: contentRise .55s ease both;
+    }
+    #homePage.page-enter .card:nth-child(2) { animation-delay: .08s; }
+    #homePage.page-enter .card:nth-child(3) { animation-delay: .16s; }
+    @media (prefers-reduced-motion: reduce) {
+      .page-enter, .page-enter .detail-hero > div,
+      .page-enter .detail-hero > img, .page-enter .detail-gallery img,
+      #homePage.page-enter .hero-content, #homePage.page-enter .card {
+        animation: none !important;
+      }
+      html { scroll-behavior: auto; }
+    }
     .detail-hero { display:grid; grid-template-columns: 1.05fr .95fr; gap:35px; align-items:center; }
     .detail-hero img { width:100%; height:430px; object-fit:cover; border-radius:20px; box-shadow:var(--shadow); }
     .detail-hero h2 { font-size:clamp(2.3rem,5vw,4rem); margin:10px 0 18px; }
@@ -422,11 +461,30 @@ body.dark footer p {
     const pages = ['home','borobudur','rajaampat','rinjani','waykambas','about','contact'];
     function showPage(page) {
       if (!pages.includes(page)) page = 'home';
-      document.getElementById('homePage').style.display = page === 'home' ? 'block' : 'none';
+
+      const home = document.getElementById('homePage');
+      const allPages = [home, ...pages.filter(p => p !== 'home')
+        .map(p => document.getElementById(p + 'Page')).filter(Boolean)];
+
+      /* Bersihkan animasi halaman sebelumnya, lalu tampilkan halaman tujuan. */
+      allPages.forEach(el => el.classList.remove('page-enter'));
+      home.style.display = page === 'home' ? 'block' : 'none';
+
       pages.filter(p => p !== 'home').forEach(p => {
         const el = document.getElementById(p + 'Page');
         if (el) el.classList.toggle('show', p === page);
       });
+
+      const activePage = page === 'home' ? home : document.getElementById(page + 'Page');
+      if (activePage) {
+        /* Reflow membuat animasi dapat diputar lagi saat halaman dibuka berulang kali. */
+        void activePage.offsetWidth;
+        activePage.classList.add('page-enter');
+        activePage.addEventListener('animationend', () => {
+          activePage.classList.remove('page-enter');
+        }, { once: true });
+      }
+
       document.querySelectorAll('.nav-links a').forEach(a => a.classList.toggle('active', a.dataset.page === page || (page !== 'home' && ['borobudur','rajaampat','rinjani','waykambas'].includes(page) && a.dataset.page === 'home')));
       document.getElementById('navLinks').classList.remove('open');
       window.scrollTo({top:0,behavior:'smooth'});
